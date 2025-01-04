@@ -78,12 +78,20 @@ export default function ChangeCurrencyForm() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     toast({
-      title: "You submitted the following values:",
+      title: "Success",
       description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
+        <div>
+          <div>
+            <span className="font-medium">From:</span> {data.inputAmount}{" "}
+            {data.inputCurrency}
+          </div>
+          <div>
+            <span className="font-medium">To:</span> {data.outputAmount}{" "}
+            {data.outputCurrency}
+          </div>
+        </div>
       ),
+      variant: "success",
     });
   }
 
