@@ -33,6 +33,7 @@ interface Props {
   onchange?: (currency: string) => void;
   name: string;
   label?: string;
+  omit?: string[];
 }
 
 export default function FormCurrencySelect({
@@ -42,6 +43,7 @@ export default function FormCurrencySelect({
   onchange,
   name,
   label,
+  omit,
 }: Props) {
   return (
     <FormField
@@ -49,7 +51,7 @@ export default function FormCurrencySelect({
       name={name}
       render={({ field }) => (
         <FormItem className="w-[80px]">
-          <FormLabel>{label}</FormLabel>
+          <FormLabel className="!text-zinc-950">{label}</FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -90,37 +92,41 @@ export default function FormCurrencySelect({
                     )}
                   </CommandEmpty>
                   <CommandGroup>
-                    {currencyList?.map((item) => (
-                      <CommandItem
-                        value={item.currency}
-                        key={item.currency}
-                        onSelect={() => {
-                          field.onChange(item.currency);
-                          onchange?.(item.currency);
-                        }}
-                      >
-                        <div className="flex gap-2">
-                          <Avatar className="w-5 h-5">
-                            <AvatarImage
-                              src={`https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/${item.currency.toUpperCase()}.svg`}
-                              alt={item.currency}
-                            />
-                            <AvatarFallback>{item.currency}</AvatarFallback>
-                          </Avatar>
-                          <span className="w-13 line-clamp-1 font-medium">
-                            {item.currency}
-                          </span>
-                        </div>
-                        <Check
-                          className={cn(
-                            "ml-auto",
-                            item.currency === field.value
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
+                    {currencyList
+                      ?.filter((item) => {
+                        return !omit?.includes(item.currency);
+                      })
+                      ?.map((item) => (
+                        <CommandItem
+                          value={item.currency}
+                          key={item.currency}
+                          onSelect={() => {
+                            field.onChange(item.currency);
+                            onchange?.(item.currency);
+                          }}
+                        >
+                          <div className="flex gap-2">
+                            <Avatar className="w-5 h-5">
+                              <AvatarImage
+                                src={`https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/${item.currency.toUpperCase()}.svg`}
+                                alt={item.currency}
+                              />
+                              <AvatarFallback>{item.currency}</AvatarFallback>
+                            </Avatar>
+                            <span className="w-13 line-clamp-1 font-medium">
+                              {item.currency}
+                            </span>
+                          </div>
+                          <Check
+                            className={cn(
+                              "ml-auto",
+                              item.currency === field.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                 </CommandList>
               </Command>

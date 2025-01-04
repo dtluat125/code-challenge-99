@@ -31,16 +31,16 @@ import { useMemo, useState } from "react";
 
 const FormSchema = z
   .object({
-    inputAmount: z.number(),
+    inputAmount: z.number().min(0),
     inputCurrency: z.string(),
-    outputAmount: z.number(),
+    outputAmount: z.number().min(0),
     outputCurrency: z.string(),
   })
   .superRefine((data, ctx) => {
     if (data.inputCurrency === data.outputCurrency) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Input and output currency cannot be the same",
+        message: "Input and output must differ",
         path: ["outputCurrency"],
       });
     }
@@ -192,7 +192,7 @@ export default function ChangeCurrencyForm() {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="flex flex-col gap-6"
+                  className="flex flex-col gap-4"
                 >
                   <div className="flex gap-2">
                     <FormCurrencySelect
@@ -217,7 +217,8 @@ export default function ChangeCurrencyForm() {
                           <FormLabel>&nbsp;</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter the amount to send"
+                              className="!text-sm"
+                              placeholder="Enter amount"
                               {...field}
                               onChange={(e) => {
                                 field.onChange(
@@ -256,6 +257,7 @@ export default function ChangeCurrencyForm() {
                       }}
                       isLoading={isFetchingCurrency}
                       label="To"
+                      // omit={[form.getValues("inputCurrency")]}
                     />
                     <FormField
                       control={form.control}
@@ -265,7 +267,8 @@ export default function ChangeCurrencyForm() {
                           <FormLabel>&nbsp;</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter the amount to receive"
+                              placeholder="Enter amount"
+                              className="!text-sm"
                               {...field}
                               onChange={(e) => {
                                 field.onChange(
