@@ -1,14 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
+import { CurrencyItem } from "@/types";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useFetchCurrencyInformation = (userId: string) => {
+export const useFetchCurrencyInformation = (
+  options?: Partial<UseQueryOptions>
+) => {
   return useQuery({
-    queryKey: ["fetch-currency-information", userId],
+    ...options,
+    queryKey: ["fetch-currency-information"],
     queryFn: async () => {
-      const response = await axios.get(
-        `/api/user/${userId}/communication-preferences`
-      );
-      return response.data;
+      try {
+        const response = await axios.get<CurrencyItem[]>(
+          `https://interview.switcheo.com/prices.json`
+        );
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching currency information:", error);
+        throw new Error("Failed to fetch currency information");
+      }
     },
   });
 };
