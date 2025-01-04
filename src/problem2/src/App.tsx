@@ -1,5 +1,4 @@
-import ChangeCurrencyForm from "@/components/form/Form";
-import "./App.css";
+import ChangeCurrencyForm from "@/components/forms/ChangeCurrencyForm";
 
 function App() {
   return (
