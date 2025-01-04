@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import FormCurrencySelect from "@/components/forms/FormCurrencySelect";
 import Container from "@/components/layout/Container";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,14 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Form,
   FormControl,
   FormField,
@@ -31,17 +23,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useFetchCurrencyInformation } from "@/hooks/use-fetch-currency-information";
 import { toast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, Loader2, Repeat } from "lucide-react";
-import { useMemo, useState } from "react";
 import { CurrencyItem } from "@/types";
+import { Repeat } from "lucide-react";
+import { useMemo, useState } from "react";
 
 const FormSchema = z
   .object({
@@ -162,6 +148,7 @@ export default function ChangeCurrencyForm() {
         "outputAmount",
         parseFloat((inputAmount * rate).toFixed(2))
       );
+      form.clearErrors("outputAmount");
     }
   };
 
@@ -186,6 +173,7 @@ export default function ChangeCurrencyForm() {
         "inputAmount",
         parseFloat((outputAmount * rate).toFixed(2))
       );
+      form.clearErrors("inputAmount");
     }
   };
 
@@ -207,105 +195,19 @@ export default function ChangeCurrencyForm() {
                   className="flex flex-col gap-6"
                 >
                   <div className="flex gap-2">
-                    <FormField
+                    <FormCurrencySelect
                       control={form.control}
                       name="inputCurrency"
-                      render={({ field }) => (
-                        <FormItem className="w-[80px]">
-                          <FormLabel>From</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className={cn(
-                                    "w-[80px] justify-between",
-                                    !field.value && "text-zinc-500"
-                                  )}
-                                >
-                                  <span className="w-auto line-clamp-1">
-                                    {field.value ? (
-                                      <Avatar className="w-5 h-5">
-                                        <AvatarImage
-                                          src={`https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/${field.value.toUpperCase()}.svg`}
-                                          alt={field.value}
-                                        />
-                                        <AvatarFallback>
-                                          {field.value}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </span>
-                                  <ChevronsUpDown className="opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[150px] p-0">
-                              <Command>
-                                <CommandInput
-                                  placeholder="Search..."
-                                  className="h-9"
-                                />
-                                <CommandList>
-                                  <CommandEmpty>
-                                    {isFetchingCurrency ? (
-                                      <Loader2 className="animate-spin" />
-                                    ) : (
-                                      "No currency found."
-                                    )}
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {uniqueCurrencyList?.map((item) => (
-                                      <CommandItem
-                                        value={item.currency}
-                                        key={item.currency}
-                                        onSelect={() => {
-                                          field.onChange(item.currency);
-                                          calculateOutputAmount({
-                                            inputAmount:
-                                              form.getValues("inputAmount"),
-                                            inputCurrency: item.currency,
-                                            outputCurrency:
-                                              form.getValues("outputCurrency"),
-                                          });
-                                        }}
-                                      >
-                                        <div className="flex gap-2">
-                                          <Avatar className="w-5 h-5">
-                                            <AvatarImage
-                                              src={`https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/${item.currency.toUpperCase()}.svg`}
-                                              alt={item.currency}
-                                            />
-                                            <AvatarFallback>
-                                              {item.currency}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <span className="w-13 line-clamp-1 font-medium">
-                                            {item.currency}
-                                          </span>
-                                        </div>
-                                        <Check
-                                          className={cn(
-                                            "ml-auto",
-                                            item.currency === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      currencyList={uniqueCurrencyList}
+                      onchange={(currency) => {
+                        calculateOutputAmount({
+                          inputAmount: form.getValues("inputAmount"),
+                          inputCurrency: currency,
+                          outputCurrency: form.getValues("outputCurrency"),
+                        });
+                      }}
+                      isLoading={isFetchingCurrency}
+                      label="From"
                     />
                     <FormField
                       control={form.control}
@@ -329,6 +231,8 @@ export default function ChangeCurrencyForm() {
                                     form.getValues("outputCurrency"),
                                 });
                               }}
+                              type="number"
+                              step="any"
                             />
                           </FormControl>
 
@@ -339,101 +243,19 @@ export default function ChangeCurrencyForm() {
                   </div>
 
                   <div className="flex gap-2">
-                    <FormField
+                    <FormCurrencySelect
                       control={form.control}
                       name="outputCurrency"
-                      render={({ field }) => (
-                        <FormItem className="w-[80px]">
-                          <FormLabel className="">To</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className={cn(
-                                    "w-[80px] justify-between",
-                                    !field.value && "text-zinc-500"
-                                  )}
-                                >
-                                  <span className="w-auto line-clamp-1">
-                                    {field.value ? (
-                                      <Avatar className="w-5 h-5">
-                                        <AvatarImage
-                                          src={`https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/${field.value.toUpperCase()}.svg`}
-                                          alt={field.value}
-                                        />
-                                        <AvatarFallback>
-                                          {field.value}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </span>
-                                  <ChevronsUpDown className="opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[150px] p-0">
-                              <Command>
-                                <CommandInput
-                                  placeholder="Search..."
-                                  className="h-9"
-                                />
-                                <CommandList>
-                                  <CommandEmpty>
-                                    No currency found.
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {uniqueCurrencyList?.map((item) => (
-                                      <CommandItem
-                                        value={item.currency}
-                                        key={item.currency}
-                                        onSelect={() => {
-                                          field.onChange(item.currency);
-                                          calculateInputAmount({
-                                            outputAmount:
-                                              form.getValues("outputAmount"),
-                                            inputCurrency:
-                                              form.getValues("inputCurrency"),
-                                            outputCurrency: item.currency,
-                                          });
-                                        }}
-                                      >
-                                        <div className="flex gap-2">
-                                          <Avatar className="w-5 h-5">
-                                            <AvatarImage
-                                              src={`https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/${item.currency.toUpperCase()}.svg`}
-                                              alt={item.currency}
-                                            />
-                                            <AvatarFallback>
-                                              {item.currency}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <span className="w-13 line-clamp-1 font-medium">
-                                            {item.currency}
-                                          </span>
-                                        </div>
-                                        <Check
-                                          className={cn(
-                                            "ml-auto",
-                                            item.currency === field.value
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          )}
-                                        />
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      currencyList={uniqueCurrencyList}
+                      onchange={(currency) => {
+                        calculateInputAmount({
+                          outputAmount: form.getValues("outputAmount"),
+                          inputCurrency: form.getValues("inputCurrency"),
+                          outputCurrency: currency,
+                        });
+                      }}
+                      isLoading={isFetchingCurrency}
+                      label="To"
                     />
                     <FormField
                       control={form.control}
@@ -457,6 +279,8 @@ export default function ChangeCurrencyForm() {
                                     form.getValues("outputCurrency"),
                                 });
                               }}
+                              type="number"
+                              step="any"
                             />
                           </FormControl>
                           <FormMessage />
